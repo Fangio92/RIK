@@ -1,5 +1,8 @@
 package application;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -127,6 +130,16 @@ public class Main extends Application {
 		primaryStage.setFullScreen(true);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		Connection c = null;
+	    try {
+	      Class.forName("org.sqlite.JDBC");
+	      c = DriverManager.getConnection("jdbc:sqlite:test.db");
+	    } catch ( Exception e ) {
+	      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+	      System.exit(0);
+	    }
+	    System.out.println("Opened database successfully");
 
 	}
 
