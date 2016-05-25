@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -16,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -23,9 +26,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextBoundsType;
 
 public class Main extends Application {
 
+	private TextArea ta;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -107,46 +112,93 @@ public class Main extends Application {
 		right.getChildren().addAll(AddDeveloper("Slobodan", "Zivancevic", "zivancevic.slobodan@gmail.com"), separator,
 				AddDeveloper("Damir", "Dizdarevic", "dizdarevic@ymail.com"));
 
+		ta = new TextArea();
+		ta.textProperty().addListener(new ChangeListener<Object>() {
+		    @Override
+		    public void changed(ObservableValue<?> observable, Object oldValue,
+		            Object newValue) {
+		        ta.setScrollTop(Double.MAX_VALUE); //this will scroll to the bottom
+		        //use Double.MIN_VALUE to scroll to the top
+		    }
+		});
+		
+		
+		right.getChildren().add(ta);
+
 		vote.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent event) {
-
-				int y1,y2,y3,k1,k2,k3,f1,f2,f3;
+				Greska("-------------------------------");
+				int y1, y2, y3, k1, k2, k3, f1, f2, f3;
 				int id;
 				try {
-					y1=Integer.parseInt(k1p1.getText());
-					y2=Integer.parseInt(k1p2.getText());
-					y3=Integer.parseInt(k1p3.getText());
+					y1 = Integer.parseInt(k1p1.getText());
+					y2 = Integer.parseInt(k1p2.getText());
+					y3 = Integer.parseInt(k1p3.getText());
 
-					k1=Integer.parseInt(k2p1.getText());
-					k2=Integer.parseInt(k2p2.getText());
-					k3=Integer.parseInt(k2p3.getText());
-					
-					f1=Integer.parseInt(k3p1.getText());
-					f2=Integer.parseInt(k3p2.getText());
-					f3=Integer.parseInt(k3p3.getText());
-					
-					id=Integer.parseInt(ID.getText());
-							
+					k1 = Integer.parseInt(k2p1.getText());
+					k2 = Integer.parseInt(k2p2.getText());
+					k3 = Integer.parseInt(k2p3.getText());
+
+					f1 = Integer.parseInt(k3p1.getText());
+					f2 = Integer.parseInt(k3p2.getText());
+					f3 = Integer.parseInt(k3p3.getText());
+
+					id = Integer.parseInt(ID.getText());
+
 				} catch (Exception e) {
 					e.printStackTrace();
+					Greska("Greska prilikom obrade glasova!\nProverite da li su svi brojevi uneti");
 					return;
 				}
-				
-				InsertUBazu(3, y3);
-				InsertUBazu(2, y2);
-				InsertUBazu(1, y1);
-				
-				InsertUBazu(3, k3);
-				InsertUBazu(2, k2);
-				InsertUBazu(1, k1);
-				
-				InsertUBazu(3, f3);
-				InsertUBazu(2, f2);
-				InsertUBazu(1, f1);
-			}
 
-			
+				if (y1 > 100 || y2 > 100 || y3 > 100 || y1<0 || y2<0 || y3<0) {
+					Greska("Yugo glasovi neispravni");
+					return;
+				}
+
+				if (k1 > 150 || k2 > 150 || k3 > 150 || k1<100 || k2<100 || k3<100) {
+					Greska("101/128 glasovi neispravni");
+					return;
+				}
+				if (f1 < 150 || f2 < 150 || f3 < 150) {
+					Greska("Fica glasovi neispravni");
+					return;
+				}
+				if(InsertUBazu(3, y3) && InsertUBazu(2, y2) &&InsertUBazu(1, y1)){
+					Greska("Ubaceni podaci za Yugo klasu");
+				}
+				else{
+					Greska("Podaci NISU ubaceni za Yugo klasu");
+				}
+
+				if(	InsertUBazu(3, k3) && InsertUBazu(2, k2) && InsertUBazu(1, k1)){
+					Greska("Ubaceni podaci za 101/128 klasu");
+				}
+				else{
+					Greska("Podaci NISU ubaceni za Yugo klasu");
+				}
+
+				if(InsertUBazu(3, f3) && InsertUBazu(2, f2) && InsertUBazu(1, f1)){
+					Greska("Ubaceni podaci za Fica klasu");
+				}
+				else{
+					Greska("Podaci NISU ubaceni za Yugo klasu");
+				}
+				Greska("Korisnik sa ID-jem "+id+ " je uspesno glasao!");
+				k1p1.setText("");
+				k1p2.setText("");
+				k1p3.setText("");
+				k2p1.setText("");
+				k2p2.setText("");
+				k2p3.setText("");
+				k3p1.setText("");
+				k3p2.setText("");
+				k3p3.setText("");
+				
+				ID.setText("");
+			}		
+
 		});
 
 		root.setTop(top);
@@ -162,13 +214,19 @@ public class Main extends Application {
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
 
-			Statement stmt = c.createStatement();/*
-			String sql = "DROP TABLE GLASANJE; CREATE TABLE GLASANJE " + "(ID INT PRIMARY KEY     NOT NULL,"
-					+ " BROJ_AUTA      INT    NOT NULL, " + " KLASA          INT     NOT NULL, "
-					+ " BROJ_BODOVA    INT )";
-			stmt.executeUpdate(sql);*/
-			//stmt.close();
-			//c.close();
+			Statement stmt = c
+					.createStatement();/*
+										 * String sql =
+										 * "DROP TABLE GLASANJE; CREATE TABLE GLASANJE "
+										 * + "(ID INT PRIMARY KEY     NOT NULL,"
+										 * + " BROJ_AUTA      INT    NOT NULL, "
+										 * +
+										 * " KLASA          INT     NOT NULL, "
+										 * + " BROJ_BODOVA    INT )";
+										 * stmt.executeUpdate(sql);
+										 */
+			// stmt.close();
+			// c.close();
 
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -216,41 +274,42 @@ public class Main extends Application {
 
 		return grid;
 	}
-	private void InsertUBazu(int bodovi, int broj_auta) {
+
+	private boolean InsertUBazu(int bodovi, int broj_auta) {
 		// Ovde ide sql
 		try {
 			Class.forName("org.sqlite.JDBC");
 
 			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
 			c.setAutoCommit(false);
-			
 
 			// prvo select dal postoji, ako postoji update, ako ne onda insert
 
 			Statement stmt = null;
 			stmt = c.createStatement();
 
-			ResultSet rs = stmt.executeQuery("SELECT * FROM GLASANJE where BROJ_AUTA="+broj_auta);
+			ResultSet rs = stmt.executeQuery("SELECT * FROM GLASANJE where BROJ_AUTA=" + broj_auta);
 
 			if (rs.next()) {
 				System.out.println("Postoji");
 				rs.close();
-				String sql = "UPDATE GLASANJE set BROJ_BODOVA = BROJ_BODOVA+"+bodovi+" WHERE BROJ_AUTA="+broj_auta+";";
+				String sql = "UPDATE GLASANJE set BROJ_BODOVA = BROJ_BODOVA+" + bodovi + " WHERE BROJ_AUTA=" + broj_auta
+						+ ";";
 				stmt.executeUpdate(sql);
 				// c.commit();
 			} else {
 				rs.close();
 				System.out.println("Ne postoji");
-				int klasa=0;
-				if(broj_auta<100)
-					klasa=1;
-				else if(broj_auta<150)
-					klasa=2;
-				else if(broj_auta>150)
-					klasa=3;
-				
-				String sql = "INSERT INTO GLASANJE (ID,BROJ_AUTA,KLASA,BROJ_BODOVA) " + 
-				"VALUES ("+broj_auta+", "+broj_auta+","+klasa+", "+bodovi +");";
+				int klasa = 0;
+				if (broj_auta < 100)
+					klasa = 1;
+				else if (broj_auta < 150)
+					klasa = 2;
+				else if (broj_auta > 150)
+					klasa = 3;
+
+				String sql = "INSERT INTO GLASANJE (ID,BROJ_AUTA,KLASA,BROJ_BODOVA) " + "VALUES (" + broj_auta + ", "
+						+ broj_auta + "," + klasa + ", " + bodovi + ");";
 				stmt.executeUpdate(sql);
 				// c.commit();
 			}
@@ -258,12 +317,20 @@ public class Main extends Application {
 			stmt.close();
 			c.commit();
 			c.close();
+			return true;
+			
 
 		} catch (SQLException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Greska("Unos neuspesan: "+e);
+			return false;
 		}
+		
 
+	}
+
+	void Greska(String msg) {
+		ta.appendText(msg+"\n");
 	}
 
 }
