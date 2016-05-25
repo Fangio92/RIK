@@ -26,8 +26,6 @@ import javafx.scene.text.FontWeight;
 
 public class Main extends Application {
 
-	Connection c = null;
-	Statement stmt = null;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -56,9 +54,9 @@ public class Main extends Application {
 		grid1.add(new Label("Tri poena:"), 0, 1);
 		grid1.add(new Label("Dva poena:"), 1, 1);
 		grid1.add(new Label("Jedan poen:"), 2, 1);
-		grid1.add(k1p1, 0, 2);
+		grid1.add(k1p3, 0, 2);
 		grid1.add(k1p2, 1, 2);
-		grid1.add(k1p3, 2, 2);
+		grid1.add(k1p1, 2, 2);
 
 		Label naslov2 = new Label("101/128:");
 		GridPane grid2 = new GridPane();
@@ -73,9 +71,9 @@ public class Main extends Application {
 		grid2.add(new Label("Tri poena:"), 0, 1);
 		grid2.add(new Label("Dva poena:"), 1, 1);
 		grid2.add(new Label("Jedan poen:"), 2, 1);
-		grid2.add(k2p1, 0, 2);
+		grid2.add(k2p3, 0, 2);
 		grid2.add(k2p2, 1, 2);
-		grid2.add(k2p3, 2, 2);
+		grid2.add(k2p1, 2, 2);
 
 		Label naslov3 = new Label("Fica:");
 		GridPane grid3 = new GridPane();
@@ -90,9 +88,9 @@ public class Main extends Application {
 		grid3.add(new Label("Tri poena:"), 0, 1);
 		grid3.add(new Label("Dva poena:"), 1, 1);
 		grid3.add(new Label("Jedan poen:"), 2, 1);
-		grid3.add(k3p1, 0, 2);
+		grid3.add(k3p3, 0, 2);
 		grid3.add(k3p2, 1, 2);
-		grid3.add(k3p3, 2, 2);
+		grid3.add(k3p1, 2, 2);
 
 		Button vote = new Button("Glasaj");
 		vote.setPrefSize(60, 40);
@@ -113,47 +111,42 @@ public class Main extends Application {
 
 			public void handle(ActionEvent event) {
 
-				// Ovde ide sql
+				int y1,y2,y3,k1,k2,k3,f1,f2,f3;
+				int id;
 				try {
-					Class.forName("org.sqlite.JDBC");
+					y1=Integer.parseInt(k1p1.getText());
+					y2=Integer.parseInt(k1p2.getText());
+					y3=Integer.parseInt(k1p3.getText());
 
-					c = DriverManager.getConnection("jdbc:sqlite:test.db");
-				      c.setAutoCommit(false);
-
-					//prvo select dal postoji, ako postoji update, ako ne onda insert
+					k1=Integer.parseInt(k2p1.getText());
+					k2=Integer.parseInt(k2p2.getText());
+					k3=Integer.parseInt(k2p3.getText());
 					
-					 ResultSet rs = stmt.executeQuery( "SELECT * FROM GLASANJE where BROJ_AUTA=4");
-					 stmt = c.createStatement();
-					 
-					 if(rs.next()){
-						 System.out.println("Postoji");
-						 rs.close();
-					      String sql = "UPDATE GLASANJE set BROJ_BODOVA = BROJ_BODOVA+3 WHERE BROJ_AUTA=4;";
-					      stmt.executeUpdate(sql);
-					      //c.commit();						 
-					 }
-					 else{
-						 rs.close();
-						 System.out.println("Ne postoji");
-						 String sql = "INSERT INTO GLASANJE (ID,BROJ_AUTA,KLASA,BROJ_BODOVA) " +
-				                   "VALUES (3,4,1,12);"; 
-						 stmt.executeUpdate(sql);
-						 //c.commit();
-					 }				      
+					f1=Integer.parseInt(k3p1.getText());
+					f2=Integer.parseInt(k3p2.getText());
+					f3=Integer.parseInt(k3p3.getText());
 					
-					stmt.close();
-					c.commit();
-					c.close();
-					
-					
-				} catch (SQLException | ClassNotFoundException e) {
-					// TODO Auto-generated catch block
+					id=Integer.parseInt(ID.getText());
+							
+				} catch (Exception e) {
 					e.printStackTrace();
+					return;
 				}
-
 				
-
+				InsertUBazu(3, y3);
+				InsertUBazu(2, y2);
+				InsertUBazu(1, y1);
+				
+				InsertUBazu(3, k3);
+				InsertUBazu(2, k2);
+				InsertUBazu(1, k1);
+				
+				InsertUBazu(3, f3);
+				InsertUBazu(2, f2);
+				InsertUBazu(1, f1);
 			}
+
+			
 		});
 
 		root.setTop(top);
@@ -167,9 +160,9 @@ public class Main extends Application {
 
 		try {
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:test.db");
+			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
 
-			stmt = c.createStatement();/*
+			Statement stmt = c.createStatement();/*
 			String sql = "DROP TABLE GLASANJE; CREATE TABLE GLASANJE " + "(ID INT PRIMARY KEY     NOT NULL,"
 					+ " BROJ_AUTA      INT    NOT NULL, " + " KLASA          INT     NOT NULL, "
 					+ " BROJ_BODOVA    INT )";
@@ -222,6 +215,55 @@ public class Main extends Application {
 		grid.add(new Label(email), 1, 2);
 
 		return grid;
+	}
+	private void InsertUBazu(int bodovi, int broj_auta) {
+		// Ovde ide sql
+		try {
+			Class.forName("org.sqlite.JDBC");
+
+			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
+			c.setAutoCommit(false);
+			
+
+			// prvo select dal postoji, ako postoji update, ako ne onda insert
+
+			Statement stmt = null;
+			stmt = c.createStatement();
+
+			ResultSet rs = stmt.executeQuery("SELECT * FROM GLASANJE where BROJ_AUTA="+broj_auta);
+
+			if (rs.next()) {
+				System.out.println("Postoji");
+				rs.close();
+				String sql = "UPDATE GLASANJE set BROJ_BODOVA = BROJ_BODOVA+"+bodovi+" WHERE BROJ_AUTA="+broj_auta+";";
+				stmt.executeUpdate(sql);
+				// c.commit();
+			} else {
+				rs.close();
+				System.out.println("Ne postoji");
+				int klasa=0;
+				if(broj_auta<100)
+					klasa=1;
+				else if(broj_auta<150)
+					klasa=2;
+				else if(broj_auta>150)
+					klasa=3;
+				
+				String sql = "INSERT INTO GLASANJE (ID,BROJ_AUTA,KLASA,BROJ_BODOVA) " + 
+				"VALUES ("+broj_auta+", "+broj_auta+","+klasa+", "+bodovi +");";
+				stmt.executeUpdate(sql);
+				// c.commit();
+			}
+
+			stmt.close();
+			c.commit();
+			c.close();
+
+		} catch (SQLException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 }
