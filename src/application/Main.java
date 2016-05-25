@@ -2,6 +2,9 @@ package application;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -22,6 +25,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 public class Main extends Application {
+
+	Connection c = null;
+	Statement stmt = null;
+
 	@Override
 	public void start(Stage primaryStage) {
 
@@ -36,9 +43,7 @@ public class Main extends Application {
 		center.setPadding(new Insets(20, 20, 20, 20));
 		center.setSpacing(60);
 
-
-
-		Label naslov1 = new Label("Kategorija 1:");
+		Label naslov1 = new Label("Yugo:");
 		GridPane grid1 = new GridPane();
 		TextField k1p1 = new TextField();
 		TextField k1p2 = new TextField();
@@ -48,14 +53,14 @@ public class Main extends Application {
 		grid1.setVgap(10);
 		grid1.setPadding(new Insets(0, 10, 0, 10));
 		grid1.add(naslov1, 0, 0);
-		grid1.add(new Label("Jedan poen:"), 0, 1);
+		grid1.add(new Label("Tri poena:"), 0, 1);
 		grid1.add(new Label("Dva poena:"), 1, 1);
-		grid1.add(new Label("Tri poena:"), 2, 1);
+		grid1.add(new Label("Jedan poen:"), 2, 1);
 		grid1.add(k1p1, 0, 2);
 		grid1.add(k1p2, 1, 2);
 		grid1.add(k1p3, 2, 2);
 
-		Label naslov2 = new Label("Kategorija 2:");
+		Label naslov2 = new Label("101/128:");
 		GridPane grid2 = new GridPane();
 		TextField k2p1 = new TextField();
 		TextField k2p2 = new TextField();
@@ -65,14 +70,14 @@ public class Main extends Application {
 		grid2.setVgap(10);
 		grid2.setPadding(new Insets(0, 10, 0, 10));
 		grid2.add(naslov2, 0, 0);
-		grid2.add(new Label("Jedan poen:"), 0, 1);
+		grid2.add(new Label("Tri poena:"), 0, 1);
 		grid2.add(new Label("Dva poena:"), 1, 1);
-		grid2.add(new Label("Tri poena:"), 2, 1);
+		grid2.add(new Label("Jedan poen:"), 2, 1);
 		grid2.add(k2p1, 0, 2);
 		grid2.add(k2p2, 1, 2);
 		grid2.add(k2p3, 2, 2);
 
-		Label naslov3 = new Label("Kategorija 3:");
+		Label naslov3 = new Label("Fica:");
 		GridPane grid3 = new GridPane();
 		TextField k3p1 = new TextField();
 		TextField k3p2 = new TextField();
@@ -82,18 +87,16 @@ public class Main extends Application {
 		grid3.setVgap(10);
 		grid3.setPadding(new Insets(0, 10, 0, 10));
 		grid3.add(naslov3, 0, 0);
-		grid3.add(new Label("Jedan poen:"), 0, 1);
+		grid3.add(new Label("Tri poena:"), 0, 1);
 		grid3.add(new Label("Dva poena:"), 1, 1);
-		grid3.add(new Label("Tri poena:"), 2, 1);
+		grid3.add(new Label("Jedan poen:"), 2, 1);
 		grid3.add(k3p1, 0, 2);
 		grid3.add(k3p2, 1, 2);
 		grid3.add(k3p3, 2, 2);
 
-
-		Button vote=new Button("Glasaj");
+		Button vote = new Button("Glasaj");
 		vote.setPrefSize(60, 40);
-		center.getChildren().addAll(grid1,grid2,grid3,vote);
-
+		center.getChildren().addAll(grid1, grid2, grid3, vote);
 
 		VBox right = new VBox();
 
@@ -103,43 +106,82 @@ public class Main extends Application {
 		final Separator separator = new Separator();
 		separator.setStyle(" -fx-background-color: #e79423;-fx-background-radius: 2;");
 
-		right.getChildren().addAll(AddDeveloper("Slobodan", "Zivancevic", "zivancevic.slobodan@gmail.com"),
-				separator,AddDeveloper("Damir", "Dizdarevic", "dizdarevic@ymail.com"));
-
-
-
-
+		right.getChildren().addAll(AddDeveloper("Slobodan", "Zivancevic", "zivancevic.slobodan@gmail.com"), separator,
+				AddDeveloper("Damir", "Dizdarevic", "dizdarevic@ymail.com"));
 
 		vote.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent event) {
 
-				//Ovde ide sql
+				// Ovde ide sql
+				try {
+					Class.forName("org.sqlite.JDBC");
+
+					c = DriverManager.getConnection("jdbc:sqlite:test.db");
+				      c.setAutoCommit(false);
+
+					//prvo select dal postoji, ako postoji update, ako ne onda insert
+					
+					 ResultSet rs = stmt.executeQuery( "SELECT * FROM GLASANJE where BROJ_AUTA=4");
+					 stmt = c.createStatement();
+					 
+					 if(rs.next()){
+						 System.out.println("Postoji");
+						 rs.close();
+					      String sql = "UPDATE GLASANJE set BROJ_BODOVA = BROJ_BODOVA+3 WHERE BROJ_AUTA=4;";
+					      stmt.executeUpdate(sql);
+					      //c.commit();						 
+					 }
+					 else{
+						 rs.close();
+						 System.out.println("Ne postoji");
+						 String sql = "INSERT INTO GLASANJE (ID,BROJ_AUTA,KLASA,BROJ_BODOVA) " +
+				                   "VALUES (3,4,1,12);"; 
+						 stmt.executeUpdate(sql);
+						 //c.commit();
+					 }				      
+					
+					stmt.close();
+					c.commit();
+					c.close();
+					
+					
+				} catch (SQLException | ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				
 
 			}
 		});
-
 
 		root.setTop(top);
 		root.setCenter(center);
 		root.setRight(right);
 
-
-
 		Scene scene = new Scene(root, 600, 600);
 		primaryStage.setFullScreen(true);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		
-		Connection c = null;
-	    try {
-	      Class.forName("org.sqlite.JDBC");
-	      c = DriverManager.getConnection("jdbc:sqlite:test.db");
-	    } catch ( Exception e ) {
-	      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-	      System.exit(0);
-	    }
-	    System.out.println("Opened database successfully");
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			c = DriverManager.getConnection("jdbc:sqlite:test.db");
+
+			stmt = c.createStatement();/*
+			String sql = "DROP TABLE GLASANJE; CREATE TABLE GLASANJE " + "(ID INT PRIMARY KEY     NOT NULL,"
+					+ " BROJ_AUTA      INT    NOT NULL, " + " KLASA          INT     NOT NULL, "
+					+ " BROJ_BODOVA    INT )";
+			stmt.executeUpdate(sql);*/
+			//stmt.close();
+			//c.close();
+
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+		System.out.println("Opened database successfully");
 
 	}
 
@@ -147,37 +189,29 @@ public class Main extends Application {
 		launch(args);
 	}
 
-	/*public GridPane AddCategory(String naslov) {
-		Label a = new Label(naslov);
-		GridPane grid = new GridPane();
-		TextField p1 = new TextField();
-		TextField p2 = new TextField();
-		TextField p3 = new TextField();
-		a.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(0, 10, 0, 10));
-		grid.add(a, 0, 0);
-		grid.add(new Label("Jedan poen:"), 0, 1);
-		grid.add(new Label("Dva poena:"), 1, 1);
-		grid.add(new Label("Tri poena:"), 2, 1);
-		grid.add(p1, 0, 2);
-		grid.add(p2, 1, 2);
-		grid.add(p3, 2, 2);
-		return grid;
-	}*/
+	/*
+	 * public GridPane AddCategory(String naslov) { Label a = new Label(naslov);
+	 * GridPane grid = new GridPane(); TextField p1 = new TextField(); TextField
+	 * p2 = new TextField(); TextField p3 = new TextField();
+	 * a.setFont(Font.font("Arial", FontWeight.BOLD, 20)); grid.setHgap(10);
+	 * grid.setVgap(10); grid.setPadding(new Insets(0, 10, 0, 10)); grid.add(a,
+	 * 0, 0); grid.add(new Label("Jedan poen:"), 0, 1); grid.add(new Label(
+	 * "Dva poena:"), 1, 1); grid.add(new Label("Tri poena:"), 2, 1);
+	 * grid.add(p1, 0, 2); grid.add(p2, 1, 2); grid.add(p3, 2, 2); return grid;
+	 * }
+	 */
 
 	public GridPane AddDeveloper(String ime, String prezime, String email) {
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(10);
 		grid.setPadding(new Insets(0, 10, 0, 10));
-		String style=new String("-fx-font-weight: bold;");
-		Label a=new Label("Ime:");
+		String style = new String("-fx-font-weight: bold;");
+		Label a = new Label("Ime:");
 		a.setStyle(style);
-		Label b=new Label("Prezime:");
+		Label b = new Label("Prezime:");
 		b.setStyle(style);
-		Label c=new Label("e-mail:");
+		Label c = new Label("e-mail:");
 		c.setStyle(style);
 
 		grid.add(a, 0, 0);
