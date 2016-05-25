@@ -113,6 +113,7 @@ public class Main extends Application {
 				AddDeveloper("Damir", "Dizdarevic", "dizdarevic@ymail.com"));
 
 		ta = new TextArea();
+		ta.setPrefHeight(600);
 		ta.textProperty().addListener(new ChangeListener<Object>() {
 		    @Override
 		    public void changed(ObservableValue<?> observable, Object oldValue,
@@ -151,7 +152,16 @@ public class Main extends Application {
 					Greska("Greska prilikom obrade glasova!\nProverite da li su svi brojevi uneti");
 					return;
 				}
-
+				
+				if(y1==y2 ||y2==y3 || y1==y3 || k1==k2 ||k2==k3 || k1==y3 || f1==f2 ||f2==f3 || f1==f3){
+					Greska("Glasanje za isti auto dva puta nije dozvoleno!");
+					return;
+				}
+				if(y1==id || y2==id || y3==id ||k1==id || k2==id || k3==id ||f1==id || f2==id || f3==id){
+					Greska("Glasanje za samog sebe nije dozvoljeno!");
+					return;
+				}
+				
 				if (y1 > 100 || y2 > 100 || y3 > 100 || y1<0 || y2<0 || y3<0) {
 					Greska("Yugo glasovi neispravni");
 					return;
@@ -186,6 +196,7 @@ public class Main extends Application {
 					Greska("Podaci NISU ubaceni za Yugo klasu");
 				}
 				Greska("Korisnik sa ID-jem "+id+ " je uspesno glasao!");
+				
 				k1p1.setText("");
 				k1p2.setText("");
 				k1p3.setText("");
