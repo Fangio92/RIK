@@ -208,6 +208,7 @@ public class Main extends Application {
 				k3p3.setText("");
 				
 				ID.setText("");
+				PrikaziRezultate(1);
 			}		
 
 		});
@@ -245,6 +246,50 @@ public class Main extends Application {
 		}
 		System.out.println("Opened database successfully");
 
+	}
+
+	protected void PrikaziRezultate(int i) {
+		// TODO Auto-generated method stub
+		
+		if(i>3)
+			return;
+		
+		try {
+		      Class.forName("org.sqlite.JDBC");
+		      Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
+		      c.setAutoCommit(false);
+		      System.out.println("Opened database successfully");
+
+		      Statement stmt = c.createStatement();
+		      ResultSet rs = stmt.executeQuery( "SELECT * FROM GLASANJE where klasa="+i+";" );
+		      int j=0;
+		      if(i==1)
+		    	  Greska("--------Yugo--------");	
+		      else if(i==2)
+		    	  Greska("-------101/128------");	
+		      else
+		    	  Greska("--------Fica--------");	
+
+		      Greska("Auto | Bodovi");
+		      while ( rs.next() ) {
+		    	 if(j>2)
+		    		 break;
+		         int  broj_auta = rs.getInt("BROJ_AUTA");
+		         int   broj_bodova = rs.getInt("BROJ_BODOVA");
+		         
+		         Greska(broj_auta+" | "+broj_bodova);
+		         ++j;
+		      }
+		      rs.close();
+		      stmt.close();
+		      c.close();
+		    } catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      System.exit(0);
+		    }
+		
+		PrikaziRezultate(i+1);
+		
 	}
 
 	public static void main(String[] args) {
