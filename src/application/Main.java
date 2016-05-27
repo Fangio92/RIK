@@ -13,6 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -24,8 +25,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 
 public class Main extends Application {
@@ -112,18 +115,63 @@ public class Main extends Application {
 		right.getChildren().addAll(AddDeveloper("Slobodan", "Zivancevic", "zivancevic.slobodan@gmail.com"), separator,
 				AddDeveloper("Damir", "Dizdarevic", "dizdarevic@ymail.com"));
 
+		Button showResults = new Button();
+		showResults.setText("Prikazi rezultate");
+		showResults.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				ta.clear();
+				PrikaziRezultate(1);
+			}
+		});
+		Button resetDatabase = new Button();
+		resetDatabase.setText("Resetuj glasanje!!!");
+		resetDatabase.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				Stage dialogStage = new Stage();
+				dialogStage.initModality(Modality.WINDOW_MODAL);
+				
+				 Button yes=new Button("Jesam");
+				 yes.setOnAction(new EventHandler<ActionEvent>() {
+
+						@Override
+						public void handle(ActionEvent event) {
+							ResetujBazu();
+							dialogStage.close();
+
+						}
+					});
+				 Button no=new Button("Nisam");
+				 no.setOnAction(new EventHandler<ActionEvent>() {
+
+						@Override
+						public void handle(ActionEvent event) {
+							dialogStage.close();
+						}
+					});
+				
+				dialogStage.setScene(new Scene(VBoxBuilder.create().
+				    children(new Text("Da li ste sigurni da zelite da resetujete bazu?!?!"),yes
+				   ,no).
+				    alignment(Pos.CENTER).padding(new Insets(5)).build()));
+				dialogStage.show();
+			}
+		});
+
+		right.getChildren().addAll(showResults, resetDatabase);
 		ta = new TextArea();
 		ta.setPrefHeight(600);
 		ta.textProperty().addListener(new ChangeListener<Object>() {
-		    @Override
-		    public void changed(ObservableValue<?> observable, Object oldValue,
-		            Object newValue) {
-		        ta.setScrollTop(Double.MAX_VALUE); //this will scroll to the bottom
-		        //use Double.MIN_VALUE to scroll to the top
-		    }
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				ta.setScrollTop(Double.MAX_VALUE); // this will scroll to the
+													// bottom
+				// use Double.MIN_VALUE to scroll to the top
+			}
 		});
-		
-		
+
 		right.getChildren().add(ta);
 
 		vote.setOnAction(new EventHandler<ActionEvent>() {
@@ -152,22 +200,24 @@ public class Main extends Application {
 					Greska("Greska prilikom obrade glasova!\nProverite da li su svi brojevi uneti");
 					return;
 				}
-				
-				if(y1==y2 ||y2==y3 || y1==y3 || k1==k2 ||k2==k3 || k1==y3 || f1==f2 ||f2==f3 || f1==f3){
+
+				if (y1 == y2 || y2 == y3 || y1 == y3 || k1 == k2 || k2 == k3 || k1 == y3 || f1 == f2 || f2 == f3
+						|| f1 == f3) {
 					Greska("Glasanje za isti auto dva puta nije dozvoleno!");
 					return;
 				}
-				if(y1==id || y2==id || y3==id ||k1==id || k2==id || k3==id ||f1==id || f2==id || f3==id){
+				if (y1 == id || y2 == id || y3 == id || k1 == id || k2 == id || k3 == id || f1 == id || f2 == id
+						|| f3 == id) {
 					Greska("Glasanje za samog sebe nije dozvoljeno!");
 					return;
 				}
-				
-				if (y1 > 100 || y2 > 100 || y3 > 100 || y1<0 || y2<0 || y3<0) {
+
+				if (y1 > 100 || y2 > 100 || y3 > 100 || y1 < 0 || y2 < 0 || y3 < 0) {
 					Greska("Yugo glasovi neispravni");
 					return;
 				}
 
-				if (k1 > 150 || k2 > 150 || k3 > 150 || k1<100 || k2<100 || k3<100) {
+				if (k1 > 150 || k2 > 150 || k3 > 150 || k1 < 100 || k2 < 100 || k3 < 100) {
 					Greska("101/128 glasovi neispravni");
 					return;
 				}
@@ -175,28 +225,25 @@ public class Main extends Application {
 					Greska("Fica glasovi neispravni");
 					return;
 				}
-				if(InsertUBazu(3, y3) && InsertUBazu(2, y2) &&InsertUBazu(1, y1)){
+				if (InsertUBazu(3, y3) && InsertUBazu(2, y2) && InsertUBazu(1, y1)) {
 					Greska("Ubaceni podaci za Yugo klasu");
-				}
-				else{
+				} else {
 					Greska("Podaci NISU ubaceni za Yugo klasu");
 				}
 
-				if(	InsertUBazu(3, k3) && InsertUBazu(2, k2) && InsertUBazu(1, k1)){
+				if (InsertUBazu(3, k3) && InsertUBazu(2, k2) && InsertUBazu(1, k1)) {
 					Greska("Ubaceni podaci za 101/128 klasu");
-				}
-				else{
+				} else {
 					Greska("Podaci NISU ubaceni za Yugo klasu");
 				}
 
-				if(InsertUBazu(3, f3) && InsertUBazu(2, f2) && InsertUBazu(1, f1)){
+				if (InsertUBazu(3, f3) && InsertUBazu(2, f2) && InsertUBazu(1, f1)) {
 					Greska("Ubaceni podaci za Fica klasu");
-				}
-				else{
+				} else {
 					Greska("Podaci NISU ubaceni za Yugo klasu");
 				}
-				Greska("Korisnik sa ID-jem "+id+ " je uspesno glasao!");
-				
+				Greska("Korisnik sa ID-jem " + id + " je uspesno glasao!");
+
 				k1p1.setText("");
 				k1p2.setText("");
 				k1p3.setText("");
@@ -206,10 +253,10 @@ public class Main extends Application {
 				k3p1.setText("");
 				k3p2.setText("");
 				k3p3.setText("");
-				
+
 				ID.setText("");
-				PrikaziRezultate(1);
-			}		
+				// PrikaziRezultate(1);
+			}
 
 		});
 
@@ -222,74 +269,70 @@ public class Main extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
+		System.out.println("Opened database successfully");
+
+	}
+
+	protected void ResetujBazu() {
+
 		try {
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
 
-			Statement stmt = c
-					.createStatement();/*
-										 * String sql =
-										 * "DROP TABLE GLASANJE; CREATE TABLE GLASANJE "
-										 * + "(ID INT PRIMARY KEY     NOT NULL,"
-										 * + " BROJ_AUTA      INT    NOT NULL, "
-										 * +
-										 * " KLASA          INT     NOT NULL, "
-										 * + " BROJ_BODOVA    INT )";
-										 * stmt.executeUpdate(sql);
-										 */
-			// stmt.close();
-			// c.close();
+			Statement stmt = c.createStatement();
+			String sql = "delete from glasanje;";
+			stmt.executeUpdate(sql);
+
+			stmt.close();
+			c.close();
 
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		System.out.println("Opened database successfully");
-
 	}
 
 	protected void PrikaziRezultate(int i) {
 		// TODO Auto-generated method stub
-		
-		if(i>3)
+		if (i > 3)
 			return;
-		
+
 		try {
-		      Class.forName("org.sqlite.JDBC");
-		      Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
-		      c.setAutoCommit(false);
-		      System.out.println("Opened database successfully");
+			Class.forName("org.sqlite.JDBC");
+			Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
+			c.setAutoCommit(false);
+			System.out.println("Opened database successfully");
 
-		      Statement stmt = c.createStatement();
-		      ResultSet rs = stmt.executeQuery( "SELECT * FROM GLASANJE where klasa="+i+";" );
-		      int j=0;
-		      if(i==1)
-		    	  Greska("--------Yugo--------");	
-		      else if(i==2)
-		    	  Greska("-------101/128------");	
-		      else
-		    	  Greska("--------Fica--------");	
+			Statement stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM GLASANJE where klasa=" + i + " order by BROJ_BODOVA desc;");
+			int j = 0;
+			if (i == 1)
+				Greska("--------Yugo--------");
+			else if (i == 2)
+				Greska("-------101/128------");
+			else
+				Greska("--------Fica--------");
 
-		      Greska("Auto | Bodovi");
-		      while ( rs.next() ) {
-		    	 if(j>2)
-		    		 break;
-		         int  broj_auta = rs.getInt("BROJ_AUTA");
-		         int   broj_bodova = rs.getInt("BROJ_BODOVA");
-		         
-		         Greska(broj_auta+" | "+broj_bodova);
-		         ++j;
-		      }
-		      rs.close();
-		      stmt.close();
-		      c.close();
-		    } catch ( Exception e ) {
-		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-		      System.exit(0);
-		    }
-		
-		PrikaziRezultate(i+1);
-		
+			Greska("Auto | Bodovi");
+			while (rs.next()) {
+				if (j > 6)
+					break;
+				int broj_auta = rs.getInt("BROJ_AUTA");
+				int broj_bodova = rs.getInt("BROJ_BODOVA");
+
+				Greska(broj_auta + " | " + broj_bodova);
+				++j;
+			}
+			rs.close();
+			stmt.close();
+			c.close();
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+
+		PrikaziRezultate(i + 1);
+
 	}
 
 	public static void main(String[] args) {
@@ -374,19 +417,17 @@ public class Main extends Application {
 			c.commit();
 			c.close();
 			return true;
-			
 
 		} catch (SQLException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			Greska("Unos neuspesan: "+e);
+			Greska("Unos neuspesan: " + e);
 			return false;
 		}
-		
 
 	}
 
 	void Greska(String msg) {
-		ta.appendText(msg+"\n");
+		ta.appendText(msg + "\n");
 	}
 
 }
